@@ -1,0 +1,287 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <title>Food Blog</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <script src="https://cdn.jsdelivr.net/npm/vue@2.6.14/dist/vue.js"></script>
+    <link rel="preconnect" href="https://fonts.gstatic.com">
+    <link href="https://fonts.googleapis.com/css2?family=Sacramento&display=swap" rel="stylesheet">
+<style>
+    body {
+      margin: 0;
+      font-family: Arial, Helvetica, sans-serif;
+      background-color: #faf8ef;
+    }
+
+    header {
+      background-color: #fff3df;
+      padding: 20px;
+      text-align: left;
+      font-size: 36px;
+      font-family: "Brush Script MT", cursive;
+      color: rgb(255, 162, 0);
+    }
+
+    footer {
+      text-align: center;
+      padding: 15px;
+      color: gray;
+      font-size: 0.9em;
+      margin-top: 30px;
+    }
+
+    #container {
+      display: flex;
+      flex-direction: row;
+      align-items: flex-start;
+    }
+
+    #leftside {
+      width: 30%;
+      background-color: rgb(77, 192, 154);
+      min-height: 100vh;
+      padding: 30px;
+      box-sizing: border-box;
+    }
+
+    #photos {
+      background-color: #ffffff;
+      padding: 10px;
+      border-radius: 8px;
+      box-shadow: 0 3px 8px rgba(0, 0, 0, 0.15);
+      width: 85%;
+      margin: 20px auto;
+      text-align: center;
+    }
+
+    #photos img {
+      width: 100%;
+      border-radius: 8px;
+      display: block;
+    }
+
+    main {
+      flex: 1;
+      background-color: #fffdf7;
+      padding: 40px 60px;
+      box-sizing: border-box;
+    }
+
+    main h2 {
+      color: rgb(0, 180, 150);
+      font-size: 22px;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      margin-bottom: 30px;
+    }
+
+    .post {
+      display: flex;
+      align-items: flex-start;
+      gap: 15px;
+      margin: 25px 0;
+      padding: 20px 25px;
+      border: 1px solid rgba(83, 78, 58, 0.4);
+      border-radius: 8px;
+      background-color: #fffdf7;
+      box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
+    }
+
+    .profile-pic {
+      width: 60px;
+      height: 60px;
+      border-radius: 5px;
+      cursor: pointer;
+      flex-shrink: 0;
+    }
+
+    .post-body {
+      flex: 1;
+      line-height: 1.5;
+    }
+
+    .post-meta {
+      font-weight: 500;
+      margin-bottom: 10px;
+    }
+
+    .post-meta .author {
+      font-weight: bold;
+    }
+
+    .post-comment {
+      margin: 0;
+      color: #333;
+    }
+
+    /* ===== Floating Box ===== */
+    .floating-box {
+      display: none;
+      position: fixed;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      background-color: rgba(0, 0, 0, 0.9);
+      color: white;
+      padding: 25px 30px;
+      border-radius: 10px;
+      width: 320px;
+      z-index: 10;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+      text-align: left;
+    }
+
+    .floating-box.active {
+      display: block;
+    }
+
+    .floating-box h3 {
+      margin-top: 0;
+      font-size: 1.4em;
+      color: #fff;
+    }
+
+    .floating-box strong {
+      color:  rgb(255, 162, 0);
+    }
+
+    .close-btn {
+      position: absolute;
+      top: 8px;
+      right: 12px;
+      font-size: 22px;
+      color: white;
+      cursor: pointer;
+      background: none;
+      border: none;
+    }
+
+    .floating-box button {
+      margin-top: 15px;
+      padding: 6px 12px;
+      border: none;
+      border-radius: 4px;
+      background-color: rgb(0, 180, 150);
+      color: #fff;
+      cursor: pointer;
+    }
+
+    .floating-box button:hover {
+      background-color: rgb(2, 140, 117);
+    }
+  </style>
+</head>
+
+<body>
+  <header>Food Blog</header>
+
+  <div id="container">
+    <!-- Left Sidebar -->
+    <aside id="leftside">
+      <div id="photos">
+        <img src="images/chili.jpg" alt="White Chicken Chili">
+      </div>
+    </aside>
+
+    <!-- Main Content (Vue App) -->
+    <main id="app">
+      <h2>Comments</h2>
+      <section id="blogposts">
+        <blog-post
+          v-for="post in posts"
+          v-bind:key="post.id"
+          v-bind:post="post"
+          @show-profile="showProfile"
+        ></blog-post>
+      </section>
+
+      <!-- Floating Profile Box -->
+      <div v-if="selectedProfile" class="floating-box active">
+        <button class="close-btn" @click="closeProfile">&times;</button>
+        <h3>{{ selectedProfile.author }}</h3>
+        <p><strong>Foodie Level:</strong> {{ selectedProfile.level }}</p>
+        <p><strong>Bio:</strong> {{ selectedProfile.bio }}</p>
+        <button @click="closeProfile">Close</button>
+      </div>
+    </main>
+  </div>
+
+  <footer>&copy; 2025 Food Blog</footer>
+
+  <script>
+    // Blog Post component
+    Vue.component("blog-post", {
+      props: ["post"],
+      template: `
+        <div class="post">
+          <!-- Use v-bind for profile placeholder -->
+          <img v-bind:src="'images/profile.png'" alt="Profile" class="profile-pic"
+               @click="$emit('show-profile', post)">
+          <div class="post-body">
+            <div class="post-meta">
+              <span class="author">{{ post.author }}</span> — 
+              <span class="date">{{ post.date }}</span>
+            </div>
+            <p class="post-comment">{{ post.comment }}</p>
+          </div>
+        </div>
+      `
+    });
+
+    // Main Vue Instance
+    new Vue({
+      el: "#app",
+      data: {
+        selectedProfile: null,
+        posts: [
+          {
+            id: 1,
+            author: "Brianna",
+            date: "February 18, 2021 @ 3:30 pm",
+            comment:
+              "Was amazing! My Walmart didn’t have coriander in stock and didn’t have ground cumin. I used serrano instead of jalapeño. It was just like my favorite tortilla soup from BJs. I am sending this recipe to my family. I want everyone to try it!",
+            level: "Novice",
+            bio: "Food enthusiast. Love to cook and experiment. Into only organic, fat free, sugar free stuffs!"
+          },
+          {
+            id: 2,
+            author: "LINH",
+            date: "February 15, 2021 @ 9:46 am REPLY",
+            comment:
+              "I just made this soup today and it’s so tasty! didn’t have corn at home but still turned out very good. It’s a winner! I made beef chili for my parents; but since my dad has gout he can’t eat beef; this white chicken chili is perfect for him. Thank you Lisa!",
+            level: "Newcomer",
+            bio: "Love food! Grew up with meat and potatoes. Recently ventured outside my comfort zone. Loving everything I have been eating so far. Thai is my favorite at this time."
+          },
+          {
+            id: 3,
+            author: "CATHERINE LEONARDO",
+            date: "February 13, 2021 @ 12:58 pm REPLY",
+            comment:
+              "I LOVE this White Chicken Chili! You are right, it is satiating meal—delicious with toasted bread. Refreshingly different taste than any chicken chili I’ve made in the past. Will be an all-time favorite, for sure.",
+            level: "Intermediate",
+            bio: "I have to say I never was the adventurous type until 2 years ago. My boyfriend, who is of Japanese background, exposed me to other cultural food and I have never look back since!"
+          },
+          {
+            id: 4,
+            author: "KALI",
+            date: "February 13, 2021 @ 11:31 am REPLY",
+            comment:
+              "Delicious recipe. I added zucchini and carrots for extra vegetables. It turned out amazing and my kids loved it!",
+            level: "Enthusiast",
+            bio: "Food is my passion. So is cooking. I love to experiment and try new things. I have to admit I'm a food whore! Invite me over for dinner and I'll be there!"
+          }
+        ]
+      },
+      methods: {
+        showProfile(post) {
+          this.selectedProfile = post;
+        },
+        closeProfile() {
+          this.selectedProfile = null;
+        }
+      }
+    });
+  </script>
+</body>
+</html>
